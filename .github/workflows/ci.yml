@@ -1,0 +1,49 @@
+```yaml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test-and-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Install uv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+          enable-cache: true
+
+      # 4. Install project dependencies
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # 5. Run tests
+      - name: Run tests
+        run: uv run pytest
+
+      # 6. Build Docker image
+      - name: Build Docker image
+        run: docker build -t genai-app:${{ github.sha }} .
+```
