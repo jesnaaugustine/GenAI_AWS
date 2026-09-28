@@ -45,6 +45,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t genai-app:${{ github.sha }} .
 
+      - name: Debug OIDC claims
+        uses: github/actions-oidc-debugger@main
+
       - name: Configure AWS credentials
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: aws-actions/configure-aws-credentials@v4
