@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 class ChatService:
     def __init__(self, openai_client: OpenAIClient):
         self.openai_client = openai_client
+        
+        @property
+        def model_name(self) -> str:
+            return self.openai_client.model.model_name
 
     async def chat(self, message: str) -> str:
         logger.info("Processing chat request")

@@ -1,17 +1,62 @@
-from pathlib import Path
-import sys
+from fastapi.testclient import TestClient
 
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0,str(PROJECT_ROOT))
-from app.core.config import get_settings
+from app.main import app
+from app.dependencies import get_chat_service
 
 
+class FakeChatService:
 
-settings = get_settings()
+    model_name = "test-model"
 
-print(settings.app_name)
-print(settings.environment)
-print(settings.aws_region)
-print(settings.bedrock_model_id)
-print(settings.openai_model)
-print(settings.openai_api_key)
+    async def chat(self, message: str) -> str:
+        return "This is a mocked AI response."
+
+
+def get_test_chat_service() -> FakeChatService:
+    return FakeChatService()
+
+
+app.dependency_overrides[get_chat_service] = (
+    get_test_chat_service
+)
+
+client = TestClient(app)
+
+
+def test_chat_success():
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "message": "What is machine learning?"
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["response"] == (
+        "This is a mocked AI response."
+    )
+
+    assert data["model"] == "test-model"
+
+
+def test_chat_empty_message():
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "message": ""
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_chat_missing_message():
+    response = client.post(
+        "/api/v1/chat",
+        json={},
+    )
+
+    assert response.status_code == 422
