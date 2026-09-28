@@ -16,9 +16,7 @@ def get_test_chat_service() -> FakeChatService:
     return FakeChatService()
 
 
-app.dependency_overrides[get_chat_service] = (
-    get_test_chat_service
-)
+app.dependency_overrides[get_chat_service] = (get_test_chat_service)
 
 client = TestClient(app)
 
