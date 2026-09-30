@@ -18,6 +18,7 @@ async def request_id_middleware(
     start_time = time.perf_counter()
     request.state.request_id = request_id
     token = request_id_context.set(request_id)
+    response = None
 
     try:
         response = await call_next(request)
