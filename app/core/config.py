@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from turtle import st
 from typing import List, Literal, Optional
 from functools import lru_cache
 
@@ -28,6 +29,20 @@ class Settings(BaseSettings):
 
     openai_api_key: SecretStr = Field(default=SecretStr(""))
     openai_model: str = Field(default="gpt-5.6-luna")
+
+    cognito_user_pool_id: str
+    cognito_client_id: str
+
+    db_username:str = Field(default="genai_app", description="Database username")
+    db_password:str = Field(description="Database password")
+    db_host:str = Field(default="genai-postgres.c0twiocwwhdi.us-east-1.rds.amazonaws.com", description="Database host")
+    db_port:int = Field(default=5432, description="Database port")
+    db_name:str = Field(default="genai_db", description="Database name")
+
+   # database_url: str = Field(default="sqlite+aiosqlite:///./genai.db", description="RDS URL")
+    echo_sql: bool = Field(default=False, description="Enable SQL query logging")
+    pool_size: int = Field(default=10, description="Database connection pool size")
+    max_overflow: int = Field(default=5, description="Maximum pool overflow")
 
 @lru_cache()
 def get_settings() -> Settings:

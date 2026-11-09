@@ -10,6 +10,9 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.api.v1.schemas.error import ErrorResponse, ErrorDetail
 from app.core.middleware import request_id_middleware
+from app.db.factory import make_database
+
+from app.auth.cognito import CognitoJWTVerifier
 
 from app.core.exceptions import AppException
 logger = logging.getLogger(__name__)
@@ -24,11 +27,22 @@ async def lifespan(app: FastAPI):
     app.state.openai_client = make_openai_client()
     logger.info("OpenAI client created successfully.")
 
+    database = await make_database()
+    app.state.database = database
+    logger.info("Database connection established successfully.")
+
+    cognito_verifier = CognitoJWTVerifier(
+        user_pool_id=settings.cognito_user_pool_id,
+        client_id=settings.cognito_client_id,
+        region=settings.aws_region)
+    app.state.cognito_verifier = cognito_verifier
+    logger.info("Cognito JWT verifier initialized")
 
     yield
 
     # Shutdown
     app.state.openai_client = None
+    await database.teardown()
     logger.info("Application shutting down...")
 
 
